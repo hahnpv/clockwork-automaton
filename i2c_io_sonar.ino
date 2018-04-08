@@ -27,6 +27,7 @@ NewPing sonar1(2, 3, 50); // Sensor 1: trigger pin, echo pin, maximum distance i
 NewPing sonar2(4,  5, 50); // Sensor 2: same stuff
 #define pingSpeed 20        // Ping frequency (in milliseconds), fastest we should ping is about 35ms per sensor
 
+// Max range of 50 cm = 100cm round trip ~ 3 ms. Potential for reflections to mess up second sensor with 20ms duration but likely OK
 
 struct rpt {
   byte sns[4];
@@ -58,7 +59,7 @@ void read_sensor(sensor & s)
    }
 }
 
-void sensor_logic(sensor & left, sensor & right)
+bool sensor_logic(sensor & left, sensor & right)
 {
    float delta = 0.2;    // percentage required to take action
 
@@ -97,8 +98,10 @@ void sensor_logic(sensor & left, sensor & right)
      {
        // if right, turn right
        Serial.println("FORWARD");  
+       return true;
      }
    }
+   return false;
 }
 
 sensor left, right;
@@ -154,6 +157,8 @@ void setup() {
   pingTimer2 = pingTimer1 + (pingSpeed / 2); // Sensor 2 fires 50ms later
 }
 
+bool pause = false;
+
 void loop() {
   if(slave)
   {
@@ -183,25 +188,34 @@ void loop() {
       read_sensor(right);
 
       // both sensors read. Do logic.
-      sensor_logic(left, right);
+      pause = sensor_logic(left, right);
 
       int duration = millis()-lastMillis;
       lastMillis = millis();
       Serial.print(left.val);Serial.print(" | ");Serial.print(right.val);Serial.print(" || ");
       Serial.print(left.per);Serial.print(" | ");Serial.print(right.per);Serial.print(" || ");
       Serial.print(left.ma); Serial.print(" | ");Serial.print(right.ma); Serial.print(" || ");
-      Serial.print(duration);Serial.print(" || ");
+      Serial.print(duration);Serial.print(" || ");Serial.print(pause); Serial.print(" || ");
     }
 
-    if(report.sns[0])
-      motorLeft.write(180-90-15);
-    if(report.sns[1])
-      motorRight.write(90+15);
-    if(report.sns[2])
-      motorLeft.write(180-90+15);
-    if(report.sns[3])
-      motorRight.write(90-15);
-    delay(5);
+    if (!pause)
+    {
+      int incr = 10;
+      if(report.sns[0])
+        motorLeft.write(180-90-incr);
+      if(report.sns[1])
+        motorRight.write(90+incr);
+      if(report.sns[2])
+        motorLeft.write(180-90+incr);
+      if(report.sns[3])
+        motorRight.write(90-incr);
+//    delay(5);
+    }
+    else
+    {
+       motorLeft.write(90);
+       motorRight.write(90);
+    }
   }
 }
 
