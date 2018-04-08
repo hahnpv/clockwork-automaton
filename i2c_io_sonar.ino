@@ -200,7 +200,10 @@ void loop() {
 
     if (!pause)
     {
-      int incr = 10;
+      int incr = 10;        // 15 was fine with the 8oz bot
+                            // 10 is better with the fully loaded LIDAR bot
+                            //  8 is right about stall speed
+                            // mostly a problem of inertia. Getting sensors further out will help.
       if(report.sns[0])
         motorLeft.write(180-90-incr);
       if(report.sns[1])
