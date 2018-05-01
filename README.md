@@ -15,4 +15,4 @@ The architecture is a Arduino which reads reflectance sensors on the bottom corn
 
 It would also receive i2c heading commands from the Pi (disabled this time around) 
 
-I competed against four other competitors and got third place (out of 5). I won 2 matches and lost the other two.
+I competed against four other competitors (round robin) and got third place (out of 5). I won 2 matches and lost the other two.
